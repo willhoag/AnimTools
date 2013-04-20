@@ -1,6 +1,8 @@
+import maya.cmds as cmds
+import maya.mel as mel
+
+
 def reselect():
-    import maya.cmds as cmds
-    import maya.mel as mel
     selected = cmds.ls(sl=True)
     shelfLayout = mel.eval('string $temp = $gShelfTopLevel')
     shelf = cmds.tabLayout(shelfLayout, query=True, st=True)

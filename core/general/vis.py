@@ -1,102 +1,85 @@
-# script created by pymel.tools.mel2py from mel file:
-# /Users/willhoag/Library/Preferences/Autodesk/maya/scripts/my_scripts/toggleVis.mel
-
 import maya.cmds as cmds
 import maya.mel as mel
 
 
-class ToggleVis(object):
+# Ideal
+# ModelVis('nurbsCurves').toggle()
+# ModelVis('nurbsCurves').on()
+# ModelVis('nurbsCurves').off()
+
+# Pretty damn messy!!!
+class ModelVis(object):
+
     """docstring for toggleViz"""
+
     def __init__(self):
-        super(ToggleVis, self).__init__()
+        super(ModelVis, self).__init__()
         self.panel = str(cmds.getPanel())
 
-    def nurbsCurves(self):
-        viz = int(cmds.modelEditor(self.panel, q=1, nurbsCurves=1))
+    def toggle(self, onOff):
 
-        if viz == 1:
-            cmds.modelEditor(self.panel, e=1, nurbsCurves=0)
+        if onOff:
+            onOff = 0
         else:
+            onOff = 1
 
-            cmds.modelEditor(self.panel, e=1, nurbsCurves=1)
+        return onOff
+
+    def nurbsCurves(self):
+        viz = int(cmds.modelEditor(self.panel, query=True, nurbsCurves=True))
+        onOff = self.toggle(viz)
+        cmds.modelEditor(self.panel, edit=True, nurbsCurves=onOff)
 
     def locators(self):
-        viz = int(cmds.modelEditor(self.panel, q=1, locators=1))
-        if viz == 1:
-            cmds.modelEditor(self.panel, locators=0, e=1)
-        else:
-
-            cmds.modelEditor(self.panel, locators=1, e=1)
+        viz = int(cmds.modelEditor(self.panel, query=True, locators=True))
+        onOff = self.toggle(viz)
+        cmds.modelEditor(self.panel, edit=True, locators=onOff)
 
     def polygons(self):
-        viz = int(cmds.modelEditor(self.panel, q=1, polymeshes=1))
-        if viz == 1:
-            cmds.modelEditor(self.panel, e=1, polymeshes=0)
-        else:
-
-            cmds.modelEditor(self.panel, e=1, polymeshes=1)
+        viz = int(cmds.modelEditor(self.panel, query=True, polymeshes=True))
+        onOff = self.toggle(viz)
+        cmds.modelEditor(self.panel, edit=True, polymeshes=onOff)
 
     def nurbsSurfaces(self):
-        viz = int(cmds.modelEditor(self.panel, q=1, nurbsSurfaces=1))
-        if viz == 1:
-            cmds.modelEditor(self.panel, e=1, nurbsSurfaces=0)
-        else:
-
-            cmds.modelEditor(self.panel, e=1, nurbsSurfaces=1)
+        viz = int(cmds.modelEditor(self.panel, query=True, nurbsSurfaces=True))
+        onOff = self.toggle(viz)
+        cmds.modelEditor(self.panel, edit=True, nurbsSurfaces=onOff)
 
     def joints(self):
-        viz = int(cmds.modelEditor(self.panel, q=1, joints=1))
-        if viz == 1:
-            cmds.modelEditor(self.panel, joints=0, e=1)
-        else:
-
-            cmds.modelEditor(self.panel, joints=1, e=1)
+        viz = int(cmds.modelEditor(self.panel, query=True, joints=True))
+        onOff = self.toggle(viz)
+        cmds.modelEditor(self.panel, joints=True, edit=onOff)
 
     def isolateSelect(self):
         panelType = str(cmds.getPanel(to=self.panel))
         if panelType is 'modelPanel':
-            state = int(cmds.isolateSelect(self.panel, q=1, state=1))
+            state = int(cmds.isolateSelect(self.panel, query=True, statedit=True))
             if state:
                 mel.enableIsolateSelect(self.panel, False)
             else:
                 mel.enableIsolateSelect(self.panel, True)
 
     def wireframeOnShaded(self):
-        viz = int(cmds.modelEditor(self.panel, q=1, wireframeOnShaded=1))
-        if viz == 1:
-            cmds.modelEditor(self.panel, wireframeOnShaded=0, e=1)
-        else:
-
-            cmds.modelEditor(self.panel, wireframeOnShaded=1, e=1)
+        viz = int(cmds.modelEditor(self.panel, query=True, wireframeOnShaded=True))
+        onOff = self.toggle(viz)
+        cmds.modelEditor(self.panel, wireframeOnShaded=True, edit=onOff)
 
     def deformers(self):
-        viz = int(cmds.modelEditor(self.panel, q=1, deformers=1))
-        if viz == 1:
-            cmds.modelEditor(self.panel, deformers=0, e=1)
-        else:
-
-            cmds.modelEditor(self.panel, deformers=1, e=1)
+        viz = int(cmds.modelEditor(self.panel, query=True, deformers=True))
+        onOff = self.toggle(viz)
+        cmds.modelEditor(self.panel, deformers=True, edit=onOff)
 
     def xRay(self):
-        viz = int(cmds.modelEditor(self.panel, q=1, xray=1))
-        if viz == 1:
-            cmds.modelEditor(self.panel, xray=0, e=1)
-        else:
-
-            cmds.modelEditor(self.panel, xray=1, e=1)
+        viz = int(cmds.modelEditor(self.panel, query=True, xray=True))
+        onOff = self.toggle(viz)
+        cmds.modelEditor(self.panel, xray=True, edit=onOff)
 
     def xRayJoints(self):
-        viz = int(cmds.modelEditor(self.panel, q=1, jointXray=1))
-        if viz == 1:
-            cmds.modelEditor(self.panel, jointXray=0, e=1)
-        else:
-
-            cmds.modelEditor(self.panel, jointXray=1, e=1)
+        viz = int(cmds.modelEditor(self.panel, query=True, jointXray=True))
+        onOff = self.toggle(viz)
+        cmds.modelEditor(self.panel, jointXray=True, edit=onOff)
 
     def grid(self):
-        viz = int(cmds.modelEditor(self.panel, q=1, grid=1))
-        if viz == 1:
-            cmds.modelEditor(self.panel, grid=0, e=1)
-        else:
-
-            cmds.modelEditor(self.panel, grid=1, e=1)
+        viz = int(cmds.modelEditor(self.panel, query=True, grid=True))
+        onOff = self.toggle(viz)
+        cmds.modelEditor(self.panel, grid=True, edit=onOff)

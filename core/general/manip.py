@@ -1,122 +1,100 @@
-# script created by pymel.tools.mel2py from mel file:
-# /Users/willhoag/Library/Preferences/Autodesk/maya/scripts/my_scripts/toggleRotateMode.mel
+import maya.core as cmds
 
-from pymel.all import *
 
-def toggleRotateModePress():
-	currentTool=str(currentCtx())
-	RotateToolMarkingMenu()
-	rotX=int(manipRotateContext('Rotate',q=1,mode=1))
-	if currentTool == "RotateSuperContext":
-		if rotX == 0:
-			manipRotateContext('Rotate',e=1,mode=2)
-			# 0 = Local, 1 = Global, 2 = Gimbal
-			print "\n Changed to Gimbal Mode \n"
-			
-		
-		elif rotX == 2:
-			manipRotateContext('Rotate',e=1,mode=1)
-			print "\n Changed to Global Mode \n"
-			
-		
-		elif rotX == 1:
-			manipRotateContext('Rotate',e=1,mode=0)
-			print "\n Changed to Local Mode \n"
-			
-		
-	
-	elif rotX == 0:
-		print "\n Currently in Local Mode \n"
-		
-	
-	elif rotX == 2:
-		print "\n Currently in Gimbal Mode \n"
-		
-	
-	elif rotX == 1:
-		print "\n Currently in Global Mode \n"
-		
-	
+# Yuck, this is so messy
+class manipMode(object):
 
-def toggleRotateModeRelease():
-	RotateToolMarkingMenuPopDown()
-	
+    '''For toggling orientation of your manipulators'''
 
-def toggleTranslateModePress():
-	currentTool=str(currentCtx())
-	TranslateToolWithSnapMarkingMenu()
-	transX=int(manipMoveContext('Move',q=1,mode=1))
-	if currentTool == "moveSuperContext":
-		if transX == 1:
-			manipMoveContext('Move',e=1,mode=2)
-			# 0 = Object, 1 = Local, 2 = World, 3 = Normal, 4 = Rotation Axis
-			print "\n Changed to World Mode \n"
-			
-		
-		elif transX == 2:
-			manipMoveContext('Move',e=1,mode=0)
-			print "\n Changed to Object Mode \n"
-			
-		
-		elif transX == 0:
-			manipMoveContext('Move',e=1,mode=1)
-			print "\n Changed to Local Mode \n"
-			
-		
-	
-	elif transX == 0:
-		print "\n Currently in Object Mode \n"
-		
-	
-	elif transX == 2:
-		print "\n Currently in World Mode \n"
-		
-	
-	elif transX == 1:
-		print "\n Currently in Local Mode \n"
-		
-	
+    def __init__(self, manip):
+        super(manipMode, self).__init__()
 
-def toggleTranslateModeRelease():
-	TranslateToolWithSnapMarkingMenuPopDown()
-	
+        self.tool = str(cmds.currentCtx())
 
-def toggleScaleModePress():
-	currentTool=str(currentCtx())
-	ScaleToolWithSnapMarkingMenu()
-	scaleX=int(manipScaleContext('Scale',q=1,mode=1))
-	if currentTool == "scaleSuperContext":
-		if scaleX == 1:
-			manipScaleContext('Scale',e=1,mode=2)
-			# 0 = Object, 1 = Local, 2 = World
-			print "\n Changed to World Mode \n"
-			
-		
-		elif scaleX == 2:
-			manipScaleContext('Scale',e=1,mode=0)
-			print "\n Changed to Object Mode \n"
-			
-		
-		elif scaleX == 0:
-			manipScaleContext('Scale',e=1,mode=1)
-			print "\n Changed to Local Mode \n"
-			
-		
-	
-	elif scaleX == 0:
-		print "\n Currently in Object Mode \n"
-		
-	
-	elif scaleX == 2:
-		print "\n Currently in World Mode \n"
-		
-	
-	elif scaleX  ==1:
-		print "\n Currently in Local Mode \n"
-		
-	
+        def printMode(self, mode, changed=False):
 
-def toggleScaleModeRelease():
-	ScaleToolWithSnapMarkingMenuPopDown()
-	
+            if changed:
+                print 'Changed to %s Mode' % mode
+            else:
+                print 'Currently in %s Mode' % mode
 
+        def rotateModePress():
+
+            cmds.RotateToolMarkingMenu()
+
+            mode = int(cmds.manipRotateContext('Rotate', q=True, mode=True))
+
+            if self.tool == 'RotateSuperContext':
+                if mode == 0:
+                    cmds.manipRotateContext('Rotate', e=True, mode=2)
+                    # 0 = Local, 1 = Global, 2 = Gimbal
+                    self.printMode('Gimbal', changed=True)
+                elif mode == 2:
+                    cmds.manipRotateContext('Rotate', e=True, mode=True)
+                    self.printMode('Global', changed=True)
+                elif mode == 1:
+                    cmds.manipRotateContext('Rotate', e=True, mode=0)
+                    self.printMode('Local', changed=True)
+
+            elif mode == 0:
+                self.printMode('Local')
+            elif mode == 2:
+                self.printMode('Gimbal')
+            elif mode == 1:
+                self.printMode('Global')
+
+        def rotateModeRelease():
+            cmds.RotateToolMarkingMenuPopDown()
+
+        def translateModePress():
+            cmds.TranslateToolWithSnapMarkingMenu()
+
+            mode = int(cmds.manipMoveContext('Move', q=True, mode=True))
+
+            if self.tool == 'moveSuperContext':
+                if mode == 1:
+                    # 0 = Object, 1 = Local, 2 = World, 3 = Normal, 4 = Rotation Axis
+                    cmds.manipMoveContext('Move', e=True, mode=2)
+                    self.printMode('World', changed=True)
+                elif mode == 2:
+                    cmds.manipMoveContext('Move', e=True, mode=0)
+                    self.printMode('Object', changed=True)
+                elif mode == 0:
+                    cmds.manipMoveContext('Move', e=True, mode=True)
+                    self.printMode('Local', changed=True)
+
+            elif mode == 0:
+                self.printMode('Object')
+            elif mode == 2:
+                self.printMode('World')
+            elif mode == 1:
+                self.printMode('Local')
+
+        def translateModeRelease():
+            cmds.TranslateToolWithSnapMarkingMenuPopDown()
+
+        def scaleModePress():
+            cmds.ScaleToolWithSnapMarkingMenu()
+
+            mode = int(cmds.manipScaleContext('Scale', q=True, mode=True))
+            if self.tool == 'scaleSuperContext':
+                if mode == 1:
+                    # 0 = Object, 1 = Local, 2 = World
+                    cmds.manipScaleContext('Scale', e=True, mode=2)
+                    self.printMode('World', changed=True)
+                elif mode == 2:
+                    cmds.manipScaleContext('Scale', e=True, mode=0)
+                    self.printMode('Object', changed=True)
+                elif mode == 0:
+                    cmds.manipScaleContext('Scale', e=True, mode=True)
+                    self.printMode('Local', changed=True)
+
+            elif mode == 0:
+                self.printMode('Object')
+            elif mode == 2:
+                self.printMode('World')
+            elif mode == 1:
+                self.printMode('Local')
+
+        def scaleModeRelease():
+            cmds.ScaleToolWithSnapMarkingMenuPopDown()
