@@ -1,1 +1,1 @@
-__all__ = ["context", "hotkey", "manip", "shelf", "utilities", "vis", "action"]
+__all__ = ["hotkey", "manip", "shelf", "vis"]
