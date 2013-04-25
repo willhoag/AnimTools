@@ -3,51 +3,19 @@ import maya.mel as mel
 
 
 # for frame in ActionFrames()
-    # for object in ActionObjects()
-        # for channel in ActionChannels()
+    # for object in ActionNodes()
+        # for attr in ActionAttrs()
 
 # made this, but pymel probably as a better option for a superclass. Or maybe this should subclass one of those pymel classes then. Should look into that.
-class Channels(object):
-    """docstring for Channels"""
-    def __init__(self, node):
-        super(Channels, self).__init__()
-        self.node = node
 
-    def getSelected(self):
-
-        return cmds.channelBox('mainChannelBox', q=True, selectedMainAttributes=True)
-
-    def getSettable(self, incStatics=True):
-
-        if not incStatics:
-            # keyable and unlocked only
-            return cmds.listAttr(self.node, k=True, u=True)
-        else:
-            # all settable attrs in the channelBox
-            return self.getChannelBoxAttrs(self.node, asDict=False, incLocked=False)
-
-    def getChannelBoxAttrs(self, asDict=True, incLocked=True):
-
-        statusDict = {}
-        statusDict['keyable'] = cmds.listAttr(self.node, k=True, u=True)
-        statusDict['locked'] = cmds.listAttr(self.node, k=True, l=True)
-        statusDict['nonKeyable'] = cmds.listAttr(self.node, cb=True)
-
-        if asDict:
-            return statusDict
-        else:
-            attrs = []
-            if statusDict['keyable']:
-                attrs.extend(statusDict['keyable'])
-            if statusDict['nonKeyable']:
-                attrs.extend(statusDict['nonKeyable'])
-            if incLocked and statusDict['locked']:
-                attrs.extend(statusDict['locked'])
-            return attrs
-
+# ---------------------------------
+# TIME CLASSES
+# ---------------------------------
 
 class ActionRange(object):
+
     """docstring for ActionRange"""
+
     def __init__(self, frameRange=None):
         super(ActionRange, self).__init__()
 
@@ -58,12 +26,10 @@ class ActionRange(object):
             playBackRange['end'] = int(frameRange[1])
 
             self.range = playBackRange
-
         else:
 
             self.range = self.getActionFrameRange()
 
-    # Should be seperated as a base class for ActionFrames and ActionKeyFrames
     def getActionFrameRange(self):
 
         playBackRange = {}
@@ -86,37 +52,35 @@ class ActionRange(object):
         return playBackRange
 
 
-class ActionChannels(Channels):
-    """docstring for ActionChannels"""
-    def __init__(self, node, channels=None):
-        super(ActionChannels, self).__init__(node)
+class ActionFrames(ActionRange):
 
-        self.node = node
+    """docstring for actionFrames"""
 
-        if channels:
-            self.channels = channels
-        else:
-            self.channels = self.getActionChannels(node)
+    def __init__(self, frameRange=None, step=1):
+        ActionFrames.__init__(frameRange=frameRange)
+
+        self.step = step
 
     def __iter__(self):
-        return iter(self.channels)
 
-    def getActionChannels(self, node):
-
-        if node:
-
-            channels = self.getSelected()
-
-            if not channels:
-                channels = self.getSettable(node=self.node)
-
-            return channels
+        return iter(range(self.range['start'], self.range['end'] + 1, self.step))
 
 
-class ActionObjects(object):
-    """docstring for ActionObjects"""
+# ---------------------------------
+# NODE CLASSES
+# ---------------------------------
+
+# Here I need an ActonNode class to fill the ActionNodes class
+# ActionNode will create an object with ActionAttrs in it.
+# Then I'll be able to do:
+
+
+class ActionNodes(object):
+
+    """docstring for ActionNodes"""
+
     def __init__(self, nodes=None):
-        super(ActionObjects, self).__init__()
+        super(ActionNodes, self).__init__()
 
         if nodes:
             self.nodes = forceList(nodes)
@@ -127,25 +91,49 @@ class ActionObjects(object):
         return iter(self.nodes)
 
 
-class ActionFrames(ActionRange):
-    """docstring for actionFrames"""
-    def __init__(self, frameRange=None, step=1):
-        super(ActionFrames, self).__init__(frameRange=frameRange)
+class ActionAttrs(object):
 
-        self.step = step
+    """docstring for ActionAttrs"""
+
+    def __init__(self, node, attrs=None):
+        super(ActionAttrs, self).__init__()
+
+        self.node = node
+
+        if attrs:
+            self.attrs = attrs
+        else:
+            self.attrs = self.getActionAttrs()
 
     def __iter__(self):
+        return iter(self.attrs)
 
-        return iter(range(self.range['start'], self.range['end'] + 1, self.step))
+    def getActionAttrs(self):
+
+        attrs = self.getSelected()
+
+        if not attrs:
+            attrs = self.getSettable()
+
+        return attrs
+
+    def getSelected(self):
+
+        return cmds.channelBox('mainChannelBox', q=True, selectedMainAttributes=True)
+
+    def getSettable(self):
+
+        # keyable and unlocked only
+        return cmds.listAttr(self.node, k=True, u=True)
 
 
-class ActionKeyFrames(ActionRange):
+class ActionKeyFrames(ActionRange, ActionNodes):
+
     """docstring for ActionKeyFrames"""
-    def __init__(self, nodes, frameRange=None):
-        super(ActionKeyFrames, self).__init__(frameRange=frameRange)
 
-        # Specified nodes, otherwise selected nodes
-        self.nodes = ActionObjects(nodes=nodes)
+    def __init__(self, nodes=None, frameRange=None):
+        ActionRange.__init__(frameRange=frameRange)
+        ActionNodes.__init__(nodes=nodes)
 
         # Gather up all the keyframes for all the nodes
         keys = []
@@ -162,10 +150,26 @@ class ActionKeyFrames(ActionRange):
         return iter(self.keys)
 
 
+# Not even close to done. :) Action iterable for keys in the graph editor
+class ActionKeys(object):
+
+    """docstring for ActionKeys"""
+
+    def __init__(self, pivotValue=0):
+        super(ActionKeys, self).__init__()
+
+        self.pivotValue = pivotValue
+
+    def getSelectedKeys():
+        selectedCurves = cmds.keyframe(selected=True, query=True, name=True)
+        for curve in selectedCurves:
+            frames = cmds.keyframe(curve, selected=True, query=True, timeChange=True)
+
+
 # Should find a better way to do this.
 # Also, move to utilities folder b/c it's not maya dependent
 def forceList(var):
 
     if type(var) is not list:
-            var = [var]
+        var = [var]
     return var

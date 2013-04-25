@@ -1,5 +1,5 @@
 import maya.cmds as cmds
-from wh.core.general.action import *
+from wh.core.util.action import *
 
 # range=Range()
 # range.setIn()
@@ -12,6 +12,16 @@ class Range(object):
         super(Range, self).__init__()
         self.maxTime = cmds.playbackOptions(q=True, maxTime=True)
         self.minTime = cmds.playbackOptions(q=True, minTime=True)
+
+    def setRange(self, range=None):
+
+        if not range:
+            range = ActionRange().range
+
+        self.minTime = range['start']
+        self.maxTime = range['end']
+
+        cmds.playbackOptions(minTime=self.minTime, maxTime=self.maxTime)
 
     def setIn(self, frame=None):
 
@@ -30,16 +40,6 @@ class Range(object):
         range = {'start': self.minTime, 'end': frame}
 
         self.setRange(range=range)
-
-    def setRange(self, range=None):
-
-        if not range:
-            range = ActionFrames().range
-
-        self.minTime = range['start']
-        self.maxTime = range['end']
-
-        cmds.playbackOptions(minTime=self.minTime, maxTime=self.maxTime)
 
     def reset(self):
 

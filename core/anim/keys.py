@@ -2,15 +2,15 @@
 import maya.cmds as cmds
 
 # Should figure out a better way of doing this one:
-from wh.core.general.utilities import getCurrentFrame
-from wh.core.general.context import *
-from wh.core.general.action import *
+from wh.core.util.decorators import *
+from wh.core.util.action import *
 
 
 class Keys(object):
     """For manipulating key values"""
     def __init__(self):
         super(Keys, self).__init__()
+        self.pivotValue
 
     def scale():
         pass
@@ -35,20 +35,27 @@ class Keys(object):
 
 class KeyFrame(object):
     """For manipulating KeyFrames"""
-    def __init__(self, nodes=None, channels=None):
-        super(KeyFrames, self).__init__()
+    def __init__(self, frame=None, nodes=None, attrs=None):
+        super(KeyFrame, self).__init__()
 
-        self.nodes = ActionObjects(nodes=nodes)
-        self.channels = channels
+        if not frame:
+            frame = self.getCurrentFrame
+
+        self.frame = frame
+        self.nodes = ActionNodes(nodes=nodes)
+        self.attrs = attrs
+
+    # Should factor this out to a super class or utility script - current duplicate in range.py
+    def getCurrentFrame(self):
+        return int(cmds.currentTime(q=True))
 
     @undoChunkDecorator
     def breakdown(percent=50):
 
-        currentFrame = getCurrentFrame()
+        currentFrame = self.getCurrentFrame()
 
         for node in self.nodes:
-
-            for channel in ActionChannels(node, channels=self.channels):
+            for channel in ActionAttrs(node, attrs=self.attrs):
 
                 attr = node + '.' + channel
                 nextKey = int(cmds.findKeyframe(node, t=(currentFrame, currentFrame), at=channel, which='next'))
@@ -70,8 +77,7 @@ class KeyFrame(object):
     def initialize():
 
         for node in self.nodes:
-
-            for channel in ActionChannels(node, channels=self.channels):
+            for channel in ActionAttrs(node, attrs=self.attrs):
 
                 defaultValue = cmds.attributeQuery(channel, node=str(node), ld=1)
                 cmds.setAttr(str(node) + '.' + str(channel), defaultValue[0])
@@ -79,8 +85,8 @@ class KeyFrame(object):
 
 class KeyFrames(KeyFrame):
     """For manipulating KeyFrames"""
-    def __init__(self, nodes=None, channels=None):
-        super(KeyFrames, self).__init__(nodes=None, channels=None)
+    def __init__(self, nodes=None, attrs=None, frameRange=None):
+        super(KeyFrames, self).__init__(nodes=None, attrs=None)
 
         self.frames = ActionFrames(frameRange=frameRange)
 
@@ -88,13 +94,11 @@ class KeyFrames(KeyFrame):
     @undoChunkDecorator
     @suspendRefreshDecorator
     @restoreContextDecorator
-    def bake(frameRange=None):
+    def bake(self):
 
         for frame in self.frames:
-
             for node in self.nodes:
-
-                for channel in ActionChannels(node, channels=self.channels):
+                for channel in ActionAttrs(node, attrs=self.attrs):
 
                     cmds.currentTime(frame)
                     cmds.setKeyframe(node, at=channel)
@@ -102,7 +106,7 @@ class KeyFrames(KeyFrame):
     @undoChunkDecorator
     @suspendRefreshDecorator
     @restoreContextDecorator
-    def merge(frameRange=None):
+    def merge(self):
 
         for frame in ActionKeyFrames(self.nodes, frameRange=self.frames):
             cmds.currentTime(frame)

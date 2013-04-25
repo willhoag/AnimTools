@@ -1,4 +1,4 @@
-import maya.core as cmds
+import maya.cmds as cmds
 
 
 # Yuck, this is so messy

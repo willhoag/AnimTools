@@ -1,6 +1,6 @@
 import maya.cmds as cmds
-from wh.core.general.context import *
-from wh.core.general.action import *
+from wh.core.util.decorators import *
+from wh.core.util.action import *
 import math
 import maya.OpenMaya as om
 
@@ -76,7 +76,7 @@ class SnapObject(Transform):
 
         for frame in aframes:
             cmds.currentTime(frame)
-            self.snap(self.name, destination)
+            self.snap(destination)
             cmds.setKeyframe(self.name)
 
 
