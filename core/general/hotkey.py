@@ -1,29 +1,21 @@
 # Can't currently make a hotkey for a builtin named command
 #
-# import pymel.core as pm
+# import pymel.core as cmds
 #
 # Basic Usage
-# x = hotkey('g')
-# x.setup('whSetZero')
+# x = hotkey('g').setup('whSetZero')
 #
 # Set Modifiers
-# x = hotkey('g', alt=True, ctl=True, cmd=True)
-# x.setup('whSetZero', name='SetZeroCommand', sourceType='mel', annotation='This is a command to set selected channels to their default values')
+# x = hotkey('g', alt=True, ctl=True, cmd=True).setup('whSetZero', name='SetZeroCommand', sourceType='mel', annotation='This is a command to set selected channels to their default values')
 #
 # Other Useful Functions
-# pm.runtime.SavePreferences()
-# pm.hotkey(factorySettings=True)
+# cmds.runtime.SavePreferences()
+# cmds.hotkey(factorySettings=True)
 
-import pymel.core as pm
+import maya.cmds as cmds
 
 class hotkey:
 
-	key = None
-	alt = False
-	ctl = False
-	cmd = False
-	shift = False
-	release = False
 	name = None
 	command = None
 	commandName = None
@@ -31,9 +23,6 @@ class hotkey:
 	annotation = None
 
 	def __init__(self, key, alt=False, ctl=False, cmd=False, shift=False, release=False):
-
-		from pydev import pydevd
-		pydevd.settrace('localhost', port=7720, suspend=False)
 
 		if not shift:
 			if key.isupper():
@@ -72,13 +61,13 @@ class hotkey:
 		self.sourceType=sourceType
 
 		if self.release:
-			pm.hotkey(k=self.key, alt=self.alt, ctl=self.ctl, cmd=self.cmd, rn=self.commandName)
+			cmds.hotkey(k=self.key, alt=self.alt, ctl=self.ctl, cmd=self.cmd, rn=self.commandName)
 		else:
-			pm.hotkey(k=self.key, alt=self.alt, ctl=self.ctl, cmd=self.cmd, n=self.commandName)
+			cmds.hotkey(k=self.key, alt=self.alt, ctl=self.ctl, cmd=self.cmd, n=self.commandName)
 
-		pm.nameCommand(self.commandName, ann=self.commandName, c=self.name, stp=self.sourceType)
+		cmds.nameCommand(self.commandName, ann=self.commandName, c=self.name, stp=self.sourceType)
 
 	def setupCommand(self, command, name, sourceType, annotation):
 		"""Makes the nameCommand and the runtimeCommand that is linked to by the hotkey"""
 
-		pm.runTimeCommand(self.name, ann=self.annotation, cat='User', c=self.command, cl=self.sourceType)
+		cmds.runTimeCommand(self.name, ann=self.annotation, cat='User', c=self.command, cl=self.sourceType)

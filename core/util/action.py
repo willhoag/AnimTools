@@ -53,11 +53,9 @@ class ActionRange(object):
 
 
 class ActionFrames(ActionRange):
-
-    """docstring for actionFrames"""
-
+    """docstring for ActionFrames"""
     def __init__(self, frameRange=None, step=1):
-        ActionFrames.__init__(frameRange=frameRange)
+        super(ActionFrames, self).__init__(frameRange=frameRange)
 
         self.step = step
 
@@ -132,8 +130,8 @@ class ActionKeyFrames(ActionRange, ActionNodes):
     """docstring for ActionKeyFrames"""
 
     def __init__(self, nodes=None, frameRange=None):
-        ActionRange.__init__(frameRange=frameRange)
-        ActionNodes.__init__(nodes=nodes)
+        ActionRange.__init__(self, frameRange=frameRange)
+        ActionNodes.__init__(self, nodes=nodes)
 
         # Gather up all the keyframes for all the nodes
         keys = []

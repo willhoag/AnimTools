@@ -1,8 +1,6 @@
-# Should be in a utilities folder
-
-# import pymel.core as pm
-
 import maya.cmds as cmds
+import maya.mel as mel
+from wh.core.anim.frames import CurrentTime
 
 
 # from functools import wraps
@@ -10,6 +8,7 @@ import maya.cmds as cmds
 def operateOnSelectedDecorator(fn):
 
     # @wraps  # So decorated functions have correct __name__ and __doc__ etc
+    # Getting an error right now using this.
 
     def wrapper(*args, **kwargs):
         selection = cmds.ls(sl=True)
@@ -42,18 +41,18 @@ class RestoreContext(object):
 
     def __init__(self):
         self.autoKeyState = None
-        self.timeStore = None
+        self.time = None
         self.selection = None
 
     def __enter__(self):
         self.autoKeyState = cmds.autoKeyframe(query=True, state=True)
-        self.timeStore = cmds.currentTime(q=True)
+        self.time = CurrentTime().get()
         self.selection = cmds.ls(sl=True)
 
     def __exit__(self, *exc_info):
 
         cmds.autoKeyframe(state=self.autoKeyState)
-        cmds.currentTime(self.timeStore)
+        CurrentTime().set(self.time)
 
         if self.selection:
             cmds.select(self.selection)

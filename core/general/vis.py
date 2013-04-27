@@ -13,7 +13,7 @@ import maya.mel as mel
 # Pretty damn messy!!!
 class ModelVis(object):
 
-    """docstring for toggleViz"""
+    """ModelVis().locators()"""
 
     def __init__(self):
         super(ModelVis, self).__init__()
