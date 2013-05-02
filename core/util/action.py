@@ -26,9 +26,11 @@ class ActionRange(object):
             playBackRange['end'] = int(frameRange[1])
 
             self.range = playBackRange
-        else:
 
+        else:
             self.range = self.getActionFrameRange()
+
+        self.highlighted = False
 
     def getActionFrameRange(self):
 
@@ -38,6 +40,8 @@ class ActionRange(object):
         highlighted = cmds.timeControl(playBackSlider, q=True, rangeVisible=True)
 
         if highlighted:
+
+            self.highlighted = True
 
             frameRange = cmds.timeControl(playBackSlider, q=True, rangeArray=True)
 
@@ -54,10 +58,16 @@ class ActionRange(object):
 
 class ActionFrames(ActionRange):
     """docstring for ActionFrames"""
-    def __init__(self, frameRange=None, step=1):
+    def __init__(self, frameRange=None, step=1, single=False):
         super(ActionFrames, self).__init__(frameRange=frameRange)
 
         self.step = step
+
+        if single and not self.highlighted:
+            self.frameRrange = self.getCurrentTime()
+
+    def getCurrentTime():
+        return int(cmds.currentTime(q=True))
 
     def __iter__(self):
 
@@ -116,12 +126,10 @@ class ActionAttrs(object):
         return attrs
 
     def getSelected(self):
-
         return cmds.channelBox('mainChannelBox', q=True, selectedMainAttributes=True)
 
+    # keyable and unlocked only
     def getSettable(self):
-
-        # keyable and unlocked only
         return cmds.listAttr(self.node, k=True, u=True)
 
 
@@ -148,11 +156,15 @@ class ActionKeyFrames(ActionRange, ActionNodes):
         return iter(self.keys)
 
 
-# Not even close to done. :) Action iterable for keys in the graph editor
+# ---------------------------------
+# CURVE CLASSES
+# ---------------------------------
+
 class ActionCurves(object):
     """docstring for ActionCurves"""
     def __init__(self, curves=None):
         super(ActionCurves, self).__init__()
+
         if not curves:
             curves = cmds.keyframe(q=True, selected=True, name=True)
 
@@ -162,6 +174,7 @@ class ActionCurves(object):
         return iter(self.curves)
 
 
+# I should make this inherit from ActionCurves and have it iterate through curve and keys at the same time
 class ActionKeys(object):
     """docstring for ActionKeys"""
     def __init__(self, curve, keys=None):

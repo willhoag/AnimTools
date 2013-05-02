@@ -4,20 +4,20 @@ import maya.cmds as cmds
 # Should figure out a better way of doing this one:
 from wh.core.util.decorators import *
 from wh.core.util.action import *
-from wh.core.anim.time import CurrentTime
 
 
 class Keys(object):
     """For manipulating key values"""
-    def __init__(self, pivot=None, scaleFactor=1, pivotValue=None, affect='individual'):
+    def __init__(self):
         super(Keys, self).__init__()
 
         if not pivotValue:
             pivotValue = cmds.keyframe(q=True, valueChange=True, lastSelected=True)[0]
 
+        self.factor = factor
+        self.individual = individual
+        self.pivot = pivot
         self.pivotValue = pivotValue
-        self.scaleFactor = scaleFactor
-        self.affect = affect
 
     def scale(self):
         pass
@@ -37,26 +37,27 @@ class Keys(object):
     def flip(self):
         pass
 
-    def run(fn):
+    def iterate(fn):
 
-        def wrapper(*args, **kwargs):
+        def wrapper(pivot=None, factor=1, pivotValue=None, individual=True):
 
             for curve in ActionCurves():
 
-                self.setPivotValueCurve(curve)
+                if individual:
+                    self.setPivotValueCurve(curve)
 
                 for key in ActionKeys(curve):
-                    return fn(*args, **kwargs)
+                    return fn(self)
 
         return wrapper
 
-    @run
+    @iterate
     def push(self):
-        cmds.scaleKey(curve, index=key, valuePivot=self.pivotValue, valueScale=True / self.scaleFactor)
+        cmds.scaleKey(curve, index=key, valuePivot=self.pivotValue, valueScale=True / self.factor)
 
-    @run
+    @iterate
     def pull(self):
-        cmds.scaleKey(curve, index=key, valuePivot=self.pivotValue, valueScale=self.scaleFactor)
+        cmds.scaleKey(curve, index=key, valuePivot=self.pivotValue, valueScale=self.factor)
 
     def setPivotValueCurve(self, curve):
 
@@ -76,13 +77,13 @@ class Keys(object):
 
 class KeyFrame(object):
     """For manipulating KeyFrames"""
-    def __init__(self, frame=None, nodes=None, attrs=None):
+    def __init__(self, frames=None, nodes=None, attrs=None):
         super(KeyFrame, self).__init__()
 
-        if not frame:
-            frame = CurrentTime().get()
+        if not frames:
+            frames = ActionFrames(single=True)
 
-        self.frame = frame
+        self.frames = frames
         self.nodes = ActionNodes(nodes=nodes)
         self.attrs = attrs
 
@@ -92,24 +93,26 @@ class KeyFrame(object):
 
         for node in self.nodes:
             for attr in ActionAttrs(node, attrs=self.attrs):
+                for frame in self.frames:
 
-                attr = node + '.' + attr
-                nextKey = int(cmds.findKeyframe(node, t=(self.frame, self.frame), at=attr, which='next'))
-                prevKey = int(cmds.findKeyframe(node, t=(self.frame, self.frame), at=attr, which='previous'))
+                    attr = node + '.' + attr
+                    nextKey = int(cmds.findKeyframe(node, t=(frame, frame), at=attr, which='next'))
+                    prevKey = int(cmds.findKeyframe(node, t=(frame, frame), at=attr, which='previous'))
 
-                if not nextKey:
-                    nextKey = self.frame
+                    if not nextKey:
+                        nextKey = frame
 
-                if not prevKey:
-                    prevKey = self.frame
+                    if not prevKey:
+                        prevKey = frame
 
-                nextKeyValue = cmds.keyframe(attr, t=(nextKey, nextKey), q=True, ev=True)[0]
-                prevKeyValue = cmds.keyframe(attr, t=(prevKey, prevKey), q=True, ev=True)[0]
-                difference = nextKeyValue - prevKeyValue
-                newValue = difference * percent * .01 + prevKeyValue
-                cmds.setAttr(attr, newValue, c=True)
+                    nextKeyValue = cmds.keyframe(attr, t=(nextKey, nextKey), q=True, ev=True)[0]
+                    prevKeyValue = cmds.keyframe(attr, t=(prevKey, prevKey), q=True, ev=True)[0]
+                    difference = nextKeyValue - prevKeyValue
+                    newValue = difference * percent * .01 + prevKeyValue
+                    cmds.setAttr(attr, newValue, c=True)
 
     # Currently doesn't key unless the value changes...
+    # Currently doesn't work for multiple frames
     @undoChunkDecorator
     def initialize():
 
