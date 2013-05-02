@@ -1,6 +1,5 @@
 import maya.cmds as cmds
 import maya.mel as mel
-from wh.core.anim.frames import CurrentTime
 
 
 # from functools import wraps
@@ -46,13 +45,13 @@ class RestoreContext(object):
 
     def __enter__(self):
         self.autoKeyState = cmds.autoKeyframe(query=True, state=True)
-        self.time = CurrentTime().get()
+        self.time = int(cmds.currentTime(q=True))
         self.selection = cmds.ls(sl=True)
 
     def __exit__(self, *exc_info):
 
         cmds.autoKeyframe(state=self.autoKeyState)
-        CurrentTime().set(self.time)
+        cmds.currentTime(self.time)
 
         if self.selection:
             cmds.select(self.selection)

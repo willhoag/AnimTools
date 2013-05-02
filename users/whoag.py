@@ -17,7 +17,6 @@ hotkey('e', ctl=True, alt=True).setup('snapMe rotation', name='snapme_rotation')
 hotkey('r', ctl=True, alt=True).setup('snapMe scale', name='snapme_scale')
 
 # Display Hotkeys
-
 hotkey('D', ctl=True).setup('whToggleDeformers')
 hotkey('G', ctl=True).setup('whToggleGrid')
 hotkey('I', ctl=True).setup('whToggleIsolateSelect')

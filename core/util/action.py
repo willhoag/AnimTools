@@ -149,19 +149,32 @@ class ActionKeyFrames(ActionRange, ActionNodes):
 
 
 # Not even close to done. :) Action iterable for keys in the graph editor
+class ActionCurves(object):
+    """docstring for ActionCurves"""
+    def __init__(self, curves=None):
+        super(ActionCurves, self).__init__()
+        if not curves:
+            curves = cmds.keyframe(q=True, selected=True, name=True)
+
+        self.curves = curves
+
+    def __iter__(self):
+        return iter(self.curves)
+
+
 class ActionKeys(object):
-
     """docstring for ActionKeys"""
-
-    def __init__(self, pivotValue=0):
+    def __init__(self, curve, keys=None):
         super(ActionKeys, self).__init__()
 
-        self.pivotValue = pivotValue
+        if not keys:
+            keys = cmds.keyframe(curve, q=True, selected=True, indexValue=True)
 
-    def getSelectedKeys():
-        selectedCurves = cmds.keyframe(selected=True, query=True, name=True)
-        for curve in selectedCurves:
-            frames = cmds.keyframe(curve, selected=True, query=True, timeChange=True)
+        self.curve = curve
+        self.keys = keys
+
+    def __iter__(self):
+        return iter(self.keys)
 
 
 # Should find a better way to do this.

@@ -1,7 +1,7 @@
 import maya.cmds as cmds
 from wh.core.util.decorators import suspendRefreshDecorator, restoreContextDecorator
 from wh.core.util.action import *
-from wh.core.anim.frames import CurrentTime
+from wh.core.anim.time import CurrentTime
 import math
 import maya.OpenMaya as om
 

@@ -1,14 +1,52 @@
 import maya.cmds as cmds
+from wh.core.util.decorators import *
 from wh.core.util.action import ActionRange
-from wh.core.anim.frames import CurrentTime
+
+
+class CurrentTime(object):
+
+    """docstring for Frame"""
+
+    def __init__(self):
+        super(CurrentTime, self).__init__()
+
+    @skipUndoDecorator
+    @toggleScrubDecorator
+    def nextKey(self):
+        cmds.currentTime(cmds.findKeyframe(timeSlider=1, which='next'), e=1)
+
+    @skipUndoDecorator
+    @toggleScrubDecorator
+    def previousKey(self):
+        cmds.currentTime(cmds.findKeyframe(timeSlider=1, which='previous'), e=1)
+
+    @skipUndoDecorator
+    @toggleScrubDecorator
+    def nextFrame(self):
+        cmds.currentTime(cmds.currentTime(q=1) + 1)
+
+    @skipUndoDecorator
+    @toggleScrubDecorator
+    def previousFrame(self):
+        cmds.currentTime(cmds.currentTime(q=1) - 1)
+
+    @skipUndoDecorator
+    @toggleScrubDecorator
+    def set(self, frame):
+        cmds.currentTime(frame)
+
+    def get(self):
+        return int(cmds.currentTime(q=True))
+
 
 # range=Range()
 # range.setIn()
 # range.setIn(frame=12)
 
-
 class Range(object):
+
     """docstring for Range"""
+
     def __init__(self):
         super(Range, self).__init__()
         self.maxTime = cmds.playbackOptions(q=True, maxTime=True)
@@ -31,7 +69,7 @@ class Range(object):
 
         range = {'start': frame, 'end': self.maxTime}
 
-        self.setRange(range=range)
+        self.set(range=range)
 
     def setOut(self, frame=None):
 
@@ -40,7 +78,7 @@ class Range(object):
 
         range = {'start': self.minTime, 'end': frame}
 
-        self.setRange(range=range)
+        self.set(range=range)
 
     def reset(self):
 
@@ -49,4 +87,4 @@ class Range(object):
         range['start'] = cmds.playbackOptions(animationStartTime=True, q=True)
         range['end'] = cmds.playbackOptions(animationEndTime=True, q=True)
 
-        self.setRange(range=range)
+        self.set(range=range)
