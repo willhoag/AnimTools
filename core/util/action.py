@@ -1,5 +1,6 @@
 import maya.cmds as cmds
 import maya.mel as mel
+from wh.util.lists import forceList
 
 
 # for frame in ActionFrames()
@@ -64,14 +65,17 @@ class ActionFrames(ActionRange):
         self.step = step
 
         if single and not self.highlighted:
-            self.frameRrange = self.getCurrentTime()
+            self.range = self.getCurrentTimeRange()
 
-    def getCurrentTime():
-        return int(cmds.currentTime(q=True))
+        self.frames = range(self.range['start'], self.range['end'] + 1, self.step)
+
+    def getCurrentTimeRange(self):
+        cFrame = int(cmds.currentTime(q=True))
+        return {'start': cFrame, 'end': cFrame}
 
     def __iter__(self):
 
-        return iter(range(self.range['start'], self.range['end'] + 1, self.step))
+        return iter(self.frames)
 
 
 # ---------------------------------
@@ -90,6 +94,7 @@ class ActionNodes(object):
     def __init__(self, nodes=None):
         super(ActionNodes, self).__init__()
 
+        # Should find a better way to do this instead of using forceList
         if nodes:
             self.nodes = forceList(nodes)
         else:
@@ -190,10 +195,3 @@ class ActionKeys(object):
         return iter(self.keys)
 
 
-# Should find a better way to do this.
-# Also, move to utilities folder b/c it's not maya dependent
-def forceList(var):
-
-    if type(var) is not list:
-        var = [var]
-    return var

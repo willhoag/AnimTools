@@ -4,6 +4,7 @@ import maya.cmds as cmds
 # Should figure out a better way of doing this one:
 from wh.core.util.decorators import *
 from wh.core.util.action import *
+from wh.util.lists import listDiff
 
 
 class Keys(object):
@@ -125,10 +126,10 @@ class KeyFrame(object):
 
 class KeyFrames(KeyFrame):
     """For manipulating KeyFrames"""
-    def __init__(self, nodes=None, attrs=None, frameRange=None):
+    def __init__(self, nodes=None, attrs=None, frameRange=None, step=1):
         super(KeyFrames, self).__init__(nodes=None, attrs=None)
 
-        self.frames = ActionFrames(frameRange=frameRange)
+        self.frames = ActionFrames(frameRange=frameRange, step=step)
 
     # Current implementation adjusts keys depending on tangent. Need alternative for this
     @undoChunkDecorator
@@ -139,7 +140,7 @@ class KeyFrames(KeyFrame):
         for frame in self.frames:
             for node in self.nodes:
                 for attr in ActionAttrs(node, attrs=self.attrs):
-                    cmds.setKeyframe(node, at=attr, t=[frame, frame])
+                    cmds.setKeyframe(node, at=attr, t=[frame, frame], i=True)
 
     @undoChunkDecorator
     @suspendRefreshDecorator
@@ -148,3 +149,23 @@ class KeyFrames(KeyFrame):
 
         for frame in ActionKeyFrames(self.nodes, frameRange=self.frames):
             cmds.setKeyframe(t=[frame, frame])
+
+    def rekey(self):
+
+        for frame in self.frames:
+            for node in self.nodes:
+                for attr in ActionAttrs(node, attrs=self.attrs):
+                    cmds.setKeyframe(t=[frame, frame], i=True, at=attr)
+
+        allFrames = range(self.frames.range['start'], self.frames.range['end'] + 1)
+        keyedFrames = self.frames.frames
+        removeFrames = listDiff(allFrames, keyedFrames)
+
+        # Pull out into a new def remove(self):
+        for frame in removeFrames:
+            for node in self.nodes:
+                for attr in ActionAttrs(node, attrs=self.attrs):
+                    cmds.cutKey(time=(frame, frame), at=attr)
+
+    def remove(self):
+        pass
