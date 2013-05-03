@@ -17,7 +17,7 @@ class CurrentTime(object):
 
     @skipUndoDecorator
     @toggleScrubDecorator
-    def previousKey(self):
+    def prevKey(self):
         cmds.currentTime(cmds.findKeyframe(timeSlider=1, which='previous'), e=1)
 
     @skipUndoDecorator
@@ -27,7 +27,7 @@ class CurrentTime(object):
 
     @skipUndoDecorator
     @toggleScrubDecorator
-    def previousFrame(self):
+    def prevFrame(self):
         cmds.currentTime(cmds.currentTime(q=1) - 1)
 
     @skipUndoDecorator

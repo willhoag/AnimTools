@@ -82,15 +82,16 @@ class KeyFrame(object):
         super(KeyFrame, self).__init__()
 
         if not frames:
-            frames = ActionFrames(single=True)
+            frames = ActionFrames(single=True).frames
 
         self.frames = frames
         self.nodes = ActionNodes(nodes=nodes)
         self.attrs = attrs
 
     # Currently doesn't key unless the value changes...
+    # Not working. 
     @undoChunkDecorator
-    def breakdown(percent=50):
+    def breakdown(self, percent):
 
         for node in self.nodes:
             for attr in ActionAttrs(node, attrs=self.attrs):
@@ -112,16 +113,17 @@ class KeyFrame(object):
                     newValue = difference * percent * .01 + prevKeyValue
                     cmds.setAttr(attr, newValue, c=True)
 
-    # Currently doesn't key unless the value changes...
     # Currently doesn't work for multiple frames
+    # Could use a suspendAutoFrame decorator
     @undoChunkDecorator
-    def initialize():
+    def initialize(self):
 
         for node in self.nodes:
             for attr in ActionAttrs(node, attrs=self.attrs):
 
                 defaultValue = cmds.attributeQuery(attr, node=str(node), ld=1)
                 cmds.setAttr(str(node) + '.' + str(attr), defaultValue[0])
+                cmds.setKeyframe(node, at=attr, i=True)
 
 
 class KeyFrames(KeyFrame):
@@ -130,6 +132,7 @@ class KeyFrames(KeyFrame):
         super(KeyFrames, self).__init__(nodes=None, attrs=None)
 
         self.frames = ActionFrames(frameRange=frameRange, step=step)
+        self.frameRange = frameRange
 
     # Current implementation adjusts keys depending on tangent. Need alternative for this
     @undoChunkDecorator
@@ -147,7 +150,7 @@ class KeyFrames(KeyFrame):
     @restoreContextDecorator
     def merge(self):
 
-        for frame in ActionKeyFrames(self.nodes, frameRange=self.frames):
+        for frame in ActionKeyFrames(self.nodes, frameRange=self.frameRange):
             cmds.setKeyframe(t=[frame, frame])
 
     def rekey(self):
