@@ -20,6 +20,8 @@ class ActionRange(object):
     def __init__(self, frameRange=None):
         super(ActionRange, self).__init__()
 
+        self.highlighted = False
+
         if frameRange:
 
             playBackRange = {}
@@ -30,8 +32,6 @@ class ActionRange(object):
 
         else:
             self.range = self.getActionFrameRange()
-
-        self.highlighted = False
 
     def getActionFrameRange(self):
 

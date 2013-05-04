@@ -88,42 +88,52 @@ class KeyFrame(object):
         self.nodes = ActionNodes(nodes=nodes)
         self.attrs = attrs
 
-    # Currently doesn't key unless the value changes...
-    # Not working. 
+    # Could use suspendAutoFrame decorator
     @undoChunkDecorator
     def breakdown(self, percent):
 
-        for node in self.nodes:
-            for attr in ActionAttrs(node, attrs=self.attrs):
-                for frame in self.frames:
+        for frame in self.frames:
+            for node in self.nodes:
+                for attr in ActionAttrs(node, attrs=self.attrs):
 
-                    attr = node + '.' + attr
+                    nodeAttr = node + '.' + attr
+
                     nextKey = int(cmds.findKeyframe(node, t=(frame, frame), at=attr, which='next'))
                     prevKey = int(cmds.findKeyframe(node, t=(frame, frame), at=attr, which='previous'))
 
+                    # Set to current frame if previous or next key don't exist
                     if not nextKey:
                         nextKey = frame
 
                     if not prevKey:
                         prevKey = frame
 
-                    nextKeyValue = cmds.keyframe(attr, t=(nextKey, nextKey), q=True, ev=True)[0]
-                    prevKeyValue = cmds.keyframe(attr, t=(prevKey, prevKey), q=True, ev=True)[0]
+                    nextKeyValue = cmds.keyframe(nodeAttr, t=(nextKey, nextKey), q=True, ev=True)[0]
+                    prevKeyValue = cmds.keyframe(nodeAttr, t=(prevKey, prevKey), q=True, ev=True)[0]
                     difference = nextKeyValue - prevKeyValue
                     newValue = difference * percent * .01 + prevKeyValue
-                    cmds.setAttr(attr, newValue, c=True)
 
-    # Currently doesn't work for multiple frames
+                    # Use setAttr if opporating on the current frame to update maya
+                    if frame == cmds.currentTime(q=True):
+                        cmds.setAttr(nodeAttr, newValue, c=True)
+                    else:
+                        cmds.setKeyframe(node, at=attr, t=(frame, frame), v=newValue)
+
     # Could use a suspendAutoFrame decorator
     @undoChunkDecorator
     def initialize(self):
+        for frame in self.frames:
+            for node in self.nodes:
+                for attr in ActionAttrs(node, attrs=self.attrs):
 
-        for node in self.nodes:
-            for attr in ActionAttrs(node, attrs=self.attrs):
+                    defaultValue = cmds.attributeQuery(attr, node=node, ld=1)[0]
 
-                defaultValue = cmds.attributeQuery(attr, node=str(node), ld=1)
-                cmds.setAttr(str(node) + '.' + str(attr), defaultValue[0])
-                cmds.setKeyframe(node, at=attr, i=True)
+                    # Use setAttr if opporating on the current frame to update maya
+                    if frame == cmds.currentTime(q=True):
+                        nodeAttr = node + '.' + attr
+                        cmds.setAttr(nodeAttr, defaultValue, c=True)
+                    else:
+                        cmds.setKeyframe(node, at=attr, t=(frame, frame), v=defaultValue)
 
 
 class KeyFrames(KeyFrame):
@@ -135,6 +145,7 @@ class KeyFrames(KeyFrame):
         self.frameRange = frameRange
 
     # Current implementation adjusts keys depending on tangent. Need alternative for this
+    # bake should just be rekey on 1s
     @undoChunkDecorator
     @suspendRefreshDecorator
     @restoreContextDecorator
@@ -150,8 +161,8 @@ class KeyFrames(KeyFrame):
     @restoreContextDecorator
     def merge(self):
 
-        for frame in ActionKeyFrames(self.nodes, frameRange=self.frameRange):
-            cmds.setKeyframe(t=[frame, frame])
+        for frame in ActionKeyFrames(self.nodes.nodes, frameRange=self.frameRange):
+            cmds.setKeyframe(t=[frame, frame], i=True)
 
     def rekey(self):
 
