@@ -76,23 +76,21 @@ class Keys(object):
 
 # KeyFrame().initialize()
 
-class KeyFrame(object):
+class KeyFrames(object):
     """For manipulating KeyFrames"""
-    def __init__(self, frames=None, nodes=None, attrs=None):
-        super(KeyFrame, self).__init__()
+    def __init__(self, nodes=None, attrs=None, frameRange=None, step=1):
+        super(KeyFrames, self).__init__()
 
-        if not frames:
-            frames = ActionFrames(single=True).frames
-
-        self.frames = frames
+        self.frameRange = frameRange
         self.nodes = ActionNodes(nodes=nodes)
         self.attrs = attrs
+        self.step = step
 
     # Could use suspendAutoFrame decorator
     @undoChunkDecorator
     def breakdown(self, percent):
 
-        for frame in self.frames:
+        for frame in ActionFrames(frameRange=self.frameRange, single=True, step=self.step):
             for node in self.nodes:
                 for attr in ActionAttrs(node, attrs=self.attrs):
 
@@ -122,7 +120,7 @@ class KeyFrame(object):
     # Could use a suspendAutoFrame decorator
     @undoChunkDecorator
     def initialize(self):
-        for frame in self.frames:
+        for frame in ActionFrames(frameRange=self.frameRange, single=True, step=self.step):
             for node in self.nodes:
                 for attr in ActionAttrs(node, attrs=self.attrs):
 
@@ -135,15 +133,6 @@ class KeyFrame(object):
                     else:
                         cmds.setKeyframe(node, at=attr, t=(frame, frame), v=defaultValue)
 
-
-class KeyFrames(KeyFrame):
-    """For manipulating KeyFrames"""
-    def __init__(self, nodes=None, attrs=None, frameRange=None, step=1):
-        super(KeyFrames, self).__init__(nodes=None, attrs=None)
-
-        self.frames = ActionFrames(frameRange=frameRange, step=step)
-        self.frameRange = frameRange
-
     # Current implementation adjusts keys depending on tangent. Need alternative for this
     # bake should just be rekey on 1s
     @undoChunkDecorator
@@ -151,7 +140,7 @@ class KeyFrames(KeyFrame):
     @restoreContextDecorator
     def bake(self):
 
-        for frame in self.frames:
+        for frame in ActionFrames(frameRange=self.frameRange, step=self.step):
             for node in self.nodes:
                 for attr in ActionAttrs(node, attrs=self.attrs):
                     cmds.setKeyframe(node, at=attr, t=[frame, frame], i=True)
@@ -166,13 +155,15 @@ class KeyFrames(KeyFrame):
 
     def rekey(self):
 
-        for frame in self.frames:
+        frames = ActionFrames(frameRange=self.frameRange, step=self.step)
+
+        for frame in frames:
             for node in self.nodes:
                 for attr in ActionAttrs(node, attrs=self.attrs):
                     cmds.setKeyframe(t=[frame, frame], i=True, at=attr)
 
-        allFrames = range(self.frames.range['start'], self.frames.range['end'] + 1)
-        keyedFrames = self.frames.frames
+        allFrames = range(frames.range['start'], frames.range['end'] + 1)
+        keyedFrames = frames.frames
         removeFrames = listDiff(allFrames, keyedFrames)
 
         # Pull out into a new def remove(self):

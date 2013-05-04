@@ -65,11 +65,11 @@ class ActionFrames(ActionRange):
         self.step = step
 
         if single and not self.highlighted:
-            self.range = self.getCurrentTimeRange()
+            self.range = self.getCurrentTime()
 
         self.frames = range(self.range['start'], self.range['end'] + 1, self.step)
 
-    def getCurrentTimeRange(self):
+    def getCurrentTime(self):
         cFrame = int(cmds.currentTime(q=True))
         return {'start': cFrame, 'end': cFrame}
 
