@@ -36,6 +36,7 @@ def suspendRefreshDecorator(fn):
     return wrapper
 
 
+# Need to break this up into separate decorators
 class RestoreContext(object):
 
     def __init__(self):

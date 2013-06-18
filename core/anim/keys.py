@@ -9,6 +9,7 @@ from wh.util.lists import listDiff
 
 class Keys(object):
     """For manipulating key values"""
+
     def __init__(self):
         super(Keys, self).__init__()
 
@@ -38,7 +39,8 @@ class Keys(object):
     def flip(self):
         pass
 
-    def iterate(fn):
+    @staticmethod
+    def iterateDecorator(fn):
 
         def wrapper(pivot=None, factor=1, pivotValue=None, individual=True):
 
@@ -52,11 +54,11 @@ class Keys(object):
 
         return wrapper
 
-    @iterate
+    # @iterateDecorator
     def push(self):
         cmds.scaleKey(curve, index=key, valuePivot=self.pivotValue, valueScale=True / self.factor)
 
-    @iterate
+    # @iterateDecorator
     def pull(self):
         cmds.scaleKey(curve, index=key, valuePivot=self.pivotValue, valueScale=self.factor)
 
@@ -88,13 +90,12 @@ class KeyFrames(object):
 
     # Could use suspendAutoFrame decorator
     @undoChunkDecorator
+    @restoreContextDecorator
     def breakdown(self, percent):
 
         for frame in ActionFrames(frameRange=self.frameRange, single=True, step=self.step):
             for node in self.nodes:
                 for attr in ActionAttrs(node, attrs=self.attrs):
-
-                    nodeAttr = node + '.' + attr
 
                     nextKey = int(cmds.findKeyframe(node, t=(frame, frame), at=attr, which='next'))
                     prevKey = int(cmds.findKeyframe(node, t=(frame, frame), at=attr, which='previous'))
@@ -106,32 +107,36 @@ class KeyFrames(object):
                     if not prevKey:
                         prevKey = frame
 
+                    # Get brakdown value
+                    nodeAttr = node + '.' + attr
                     nextKeyValue = cmds.keyframe(nodeAttr, t=(nextKey, nextKey), q=True, ev=True)[0]
                     prevKeyValue = cmds.keyframe(nodeAttr, t=(prevKey, prevKey), q=True, ev=True)[0]
                     difference = nextKeyValue - prevKeyValue
                     newValue = difference * percent * .01 + prevKeyValue
 
-                    # Use setAttr if opporating on the current frame to update maya
-                    if frame == cmds.currentTime(q=True):
-                        cmds.setAttr(nodeAttr, newValue, c=True)
-                    else:
-                        cmds.setKeyframe(node, at=attr, t=(frame, frame), v=newValue)
+                    # Faster
+                    cmds.setKeyframe(node, at=attr, t=(frame, frame), v=newValue)
+
+                    # match previous and next tangents
+                    ott = cmds.keyTangent(node, at=attr, q=True, itt=True, t=(nextKey, nextKey))[0]
+                    itt = cmds.keyTangent(node, at=attr, q=True, ott=True, t=(prevKey, prevKey))[0]
+
+                    if itt != 'step':
+                        cmds.keyTangent(node, at=attr, itt=itt, t=(frame, frame))
+
+                    cmds.keyTangent(node, at=attr, ott=ott, t=(frame, frame))
 
     # Could use a suspendAutoFrame decorator
+    # Don't set keyframe unless keyed attribut is keyed already. Maybe setAttr, but make sure a key is set if it doesn't change the value?
     @undoChunkDecorator
+    @restoreContextDecorator
     def initialize(self):
         for frame in ActionFrames(frameRange=self.frameRange, single=True, step=self.step):
             for node in self.nodes:
                 for attr in ActionAttrs(node, attrs=self.attrs):
 
                     defaultValue = cmds.attributeQuery(attr, node=node, ld=1)[0]
-
-                    # Use setAttr if opporating on the current frame to update maya
-                    if frame == cmds.currentTime(q=True):
-                        nodeAttr = node + '.' + attr
-                        cmds.setAttr(nodeAttr, defaultValue, c=True)
-                    else:
-                        cmds.setKeyframe(node, at=attr, t=(frame, frame), v=defaultValue)
+                    cmds.setKeyframe(node, at=attr, t=(frame, frame), v=defaultValue)
 
     # Current implementation adjusts keys depending on tangent. Need alternative for this
     # bake should just be rekey on 1s

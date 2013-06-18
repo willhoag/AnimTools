@@ -66,6 +66,10 @@ class SnapObject(Transform):
         rotation = Transform(destination).getWorldSpaceRotation()
         cmds.xform(self.name, ro=rotation, ws=True)
 
+    # Should make an atKeys option to snap at destination's keys or snapObject's keys or any keys really. Should be able to specify frames or any object to use for key times
+    # Should make suspendAutoKey
+    # Should make eurler fileter after cmds.filterCurve( 'nurbsCone1_rotateX', 'nurbsCone1_rotateY', 'nurbsCone1_rotateZ' )
+    # Need a way to cancel this in case it's issued by accident on many controls
     @suspendRefreshDecorator
     @restoreContextDecorator
     def snapAnim(self, destination, atKeys=False):

@@ -119,7 +119,10 @@ class ActionAttrs(object):
             self.attrs = self.getActionAttrs()
 
     def __iter__(self):
-        return iter(self.attrs)
+        try:
+            return iter(self.attrs)
+        except TypeError:
+            return iter([])
 
     def getActionAttrs(self):
 
