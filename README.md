@@ -1,4 +1,4 @@
-whTools
+AnimTools
 =======
 
-A package of maya scripts
+A Maya Package for Animators
