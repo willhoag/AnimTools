@@ -106,7 +106,7 @@ class MatchLocator(SnapObject):
         locName = '%s_posMatch' % self.source
         self.name = cmds.spaceLocator(name=locName)[0]
 
-        # Usint this until I can get snappng to work with different rotation orders.
+        # Using this until I can get snappng to work with different rotation orders.
         cmds.setAttr((self.name + ".rotateOrder"), cmds.getAttr(self.source + ".rotateOrder"))
 
         # Make source Attr name
