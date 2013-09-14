@@ -22,7 +22,8 @@ class CurrentTime(object):
     @skipUndoDecorator
     @toggleScrubDecorator
     def prevKey():
-        cmds.currentTime(cmds.findKeyframe(timeSlider=1, which='previous'), e=1)
+        cmds.currentTime(
+            cmds.findKeyframe(timeSlider=1, which='previous'), e=1)
 
     @staticmethod
     @skipUndoDecorator
@@ -67,7 +68,9 @@ class CurrentTime(object):
 # range.setIn(frame=12)
 
 class Time(object):
+
     """docstring for Time"""
+
     def __init__(self):
         super(Time, self).__init__()
         self.startTime = cmds.playbackOptions(animationStartTime=True, q=True)
@@ -125,13 +128,17 @@ class Range(Time):
 
 
 class AnimView(Range):
+
     """docstring for AnimView"""
+
     def __init__(self, bookends=2):
         super(AnimView, self).__init__()
         self.bookends = bookends
 
     def matchRange(self):
-        cmds.animView(startTime=self.minTime - self.bookends, endTime=self.maxTime + self.bookends)
+        cmds.animView(startTime=self.minTime -
+                      self.bookends, endTime=self.maxTime + self.bookends)
 
     def matchTime(self):
-        cmds.animView(startTime=self.startTime - self.bookends, endTime=self.endTime + self.bookends)
+        cmds.animView(startTime=self.startTime -
+                      self.bookends, endTime=self.endTime + self.bookends)

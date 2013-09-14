@@ -7,7 +7,9 @@ import maya.OpenMaya as om
 
 
 class Transform(object):
+
     """Better name for this?"""
+
     def __init__(self, node):
         super(Transform, self).__init__()
         self.node = node
@@ -20,7 +22,8 @@ class Transform(object):
         # Get the self.node's rotate order value:
         rotOrder = cmds.getAttr('%s.rotateOrder' % self.node)
         # Get the world matrix as a list
-        matrixList = cmds.getAttr('%s.worldMatrix' % self.node)  # len(matrixList) = 16
+        # len(matrixList) = 16
+        matrixList = cmds.getAttr('%s.worldMatrix' % self.node)
         # Create an empty MMatrix:
         mMatrix = om.MMatrix()  # MMatrix
         # And populate the MMatrix object with the matrix list data:
@@ -36,7 +39,8 @@ class Transform(object):
         eulerRot.reorderIt(rotOrder)
 
         # Convert from radians to degrees:
-        angles = [math.degrees(angle) for angle in (eulerRot.x, eulerRot.y, eulerRot.z)]
+        angles = [math.degrees(angle)
+                  for angle in (eulerRot.x, eulerRot.y, eulerRot.z)]
         return angles
 
 
@@ -44,10 +48,12 @@ class Transform(object):
 #    SnapObject(node).snap(destination)
 
 class SnapObject(Transform):
+
     """
     for node in ActionNodes()
         SnapObject(node).snap(destination)
     """
+
     def __init__(self, name):
         super(SnapObject, self).__init__(name)
         self.name = name
@@ -69,7 +75,8 @@ class SnapObject(Transform):
     # Should make an atKeys option to snap at destination's keys or snapObject's keys or any keys really. Should be able to specify frames or any object to use for key times
     # Should make suspendAutoKey
     # Should make eurler fileter after cmds.filterCurve( 'nurbsCone1_rotateX', 'nurbsCone1_rotateY', 'nurbsCone1_rotateZ' )
-    # Need a way to cancel this in case it's issued by accident on many controls
+    # Need a way to cancel this in case it's issued by accident on many
+    # controls
     @suspendRefreshDecorator
     @restoreContextDecorator
     def snapAnim(self, destination, atKeys=False):
@@ -88,6 +95,7 @@ class SnapObject(Transform):
 
 
 class MatchLocator(SnapObject):
+
     """
     for node in AcionNodes():
         MatchLocator(node).matchAnim(atKeys=True)
@@ -106,8 +114,10 @@ class MatchLocator(SnapObject):
         locName = '%s_posMatch' % self.source
         self.name = cmds.spaceLocator(name=locName)[0]
 
-        # Using this until I can get snappng to work with different rotation orders.
-        cmds.setAttr((self.name + ".rotateOrder"), cmds.getAttr(self.source + ".rotateOrder"))
+        # Using this until I can get snappng to work with different rotation
+        # orders.
+        cmds.setAttr((self.name + ".rotateOrder"),
+                     cmds.getAttr(self.source + ".rotateOrder"))
 
         # Make source Attr name
         locSourceAttrName = 'source'
@@ -115,7 +125,8 @@ class MatchLocator(SnapObject):
 
         # Add and set soure attribute for reference later
         cmds.addAttr(self.name, ln=locSourceAttrName, dt='string')
-        cmds.setAttr(locNameAndAttr, self.source, lock=True, keyable=False, channelBox=False, typ='string')
+        cmds.setAttr(locNameAndAttr, self.source, lock=True,
+                     keyable=False, channelBox=False, typ='string')
 
     @restoreContextDecorator
     def match(self):
