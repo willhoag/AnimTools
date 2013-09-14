@@ -1,6 +1,6 @@
 Anim Tools
 ==========
-A Maya Python Framework for developing ideal workflows
+A Maya python library for developing ideal workflows
 
 ### Description
 This is a python package that is meant become a comprehensive set of workflow tools. It likely has a large animation bias as that is my core use of it, but much of what's in here could be used in other maya related departments ( ex: modeling, rigging, layout, etc. ).
