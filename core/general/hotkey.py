@@ -1,20 +1,19 @@
-# Can't currently make a hotkey for a builtin named command
-#
-# import pymel.core as cmds
-#
-# Basic Usage
-# x = hotkey('g').setup('whSetZero')
-#
-# Set Modifiers
-# x = hotkey('g', alt=True, ctl=True, cmd=True).setup('whSetZero', name='SetZeroCommand', sourceType='mel', annotation='This is a command to set selected channels to their default values')
-#
-# Other Useful Functions
-# cmds.runtime.SavePreferences()
-# cmds.hotkey(factorySettings=True)
-
 import maya.cmds as cmds
+import re
 
 class hotkey:
+
+	'''import pymel.core as cmds
+
+	Basic Usage
+	x = hotkey('g').setup('whSetZero')
+
+	Set Modifiers
+	x = hotkey('g', alt=True, ctl=True, cmd=True).setup('whSetZero', name='SetZeroCommand', sourceType='mel', annotation='This is a command to set selected channels to their default values')
+
+	Other Useful Functions
+	cmds.runtime.SavePreferences()
+	cmds.hotkey(factorySettings=True)'''
 
 	name = None
 	command = None
@@ -38,11 +37,11 @@ class hotkey:
 		self.release = release
 		self.key = key
 
-	def setup(self, command, name=None, sourceType='mel', annotation=''):
+	def setup(self, command, name=None, sourceType='python', annotation=''):
 		"""Sets up hotkey linking the hotkey instance to the command."""
 		
 		if not name: # Default using first part of command if name is not explicitly given
-			name = command.split()[0]
+			name = re.sub(r'\W+', '', command.split()[0])  # remove non alphanumeric characters from command for name
 
 		self.name = name
 		self.command = command
@@ -50,7 +49,7 @@ class hotkey:
 		self.annotation = annotation
 
 		# Build
-		self.setupHotkey(self.name, sourceType)
+		self.setupHotkey(name, sourceType=sourceType)
 		self.setupCommand(command, name, sourceType, annotation)
 
 	def setupHotkey(self, name, sourceType='mel'):
