@@ -1,5 +1,5 @@
 import maya.cmds as cmds
-from wh.core.util.decorators import *
+from wh.core.util.decorators import skipUndoDecorator, toggleScrubDecorator
 from wh.core.util.action import ActionRange
 import maya.mel as mel
 
