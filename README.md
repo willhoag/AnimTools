@@ -40,10 +40,10 @@ hotkey('I', ctl=True).setup('wh.ModelVis().isolateSelect()')
 
 ```
 # Skipping undo and playing that frame of audio
-CurrentTime.nextKey()
-CurrentTime.prevKey()
-CurrentTime.nextFrame()
-CurrentTime.prevFrame()
+CurrentTime().nextKey()
+CurrentTime().prevKey()
+CurrentTime().nextFrame()
+CurrentTime().prevFrame()
 
 # Sets the range slider to highlighted timeline
 Range().set() # Sets range at highlighted time
