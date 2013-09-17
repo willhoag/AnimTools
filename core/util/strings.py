@@ -1,3 +1,4 @@
-def userMessage(message):
-    prefix = "AnimTool:" 
-    print prefix + " " + message
+import sys
+
+def userMessage(message, prefix='AnimTool'):
+    sys.stdout.write(prefix + ": " + message + '\n')
